@@ -1,6 +1,7 @@
 package coconuts;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
@@ -18,10 +19,11 @@ public class GameController {
     private Timeline coconutTimeline;
     private boolean started = false;
 
-    @FXML
-    private Pane gamePane;
-    @FXML
-    private Pane theBeach;
+    @FXML private Label coconutsHitBeachLabel;
+    @FXML private Label destroyedCoconutsLabel;
+    @FXML private Pane gamePane;
+    @FXML private Pane theBeach;
+
     private OhCoconutsGameManager theGame;
 
     @FXML

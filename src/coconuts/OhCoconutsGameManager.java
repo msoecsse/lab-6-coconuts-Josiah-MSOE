@@ -87,7 +87,7 @@ public class OhCoconutsGameManager {
         for (IslandObject thisObj : allObjects) {
             for (HittableIslandObject hittableObject : hittableIslandSubjects) {
                 if (thisObj.canHit(hittableObject) && thisObj.isTouching(hittableObject)) {
-                    // TODO: add code here to process the hit
+                    // TODO: add code here to process the hit HIT EVENT?
                     scheduledForRemoval.add(hittableObject);
                     gamePane.getChildren().remove(hittableObject.getImageView());
                 }

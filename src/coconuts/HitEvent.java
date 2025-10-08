@@ -1,6 +1,5 @@
+// Author: Josiah Mathews
 package coconuts;
-
-import javafx.scene.image.Image;
 
 import java.util.Collection;
 import java.util.LinkedList;
