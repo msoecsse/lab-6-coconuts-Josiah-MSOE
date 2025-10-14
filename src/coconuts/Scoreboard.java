@@ -1,4 +1,4 @@
 package coconuts;
 
-public class Scoreboard {
+public class Scoreboard implements HitObserver {
 }

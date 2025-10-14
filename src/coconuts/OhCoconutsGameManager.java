@@ -8,13 +8,18 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 // This class manages the game, including tracking all island objects and detecting when they hit
-public class OhCoconutsGameManager {
+// Becomes the Hit-Subject which all the Observers are following here.
+public class OhCoconutsGameManager implements HitSubject {
     private final Collection<IslandObject> allObjects = new LinkedList<>();
     private final Collection<HittableIslandObject> hittableIslandSubjects = new LinkedList<>();
     private final Collection<IslandObject> scheduledForRemoval = new LinkedList<>();
+    private final Collection<HitObserver> observers = new LinkedList<>();
+
     private final int height, width;
     private final int DROP_INTERVAL = 10;
     private final int MAX_TIME = 100;
+
+    // FXML Components
     private Pane gamePane;
     private Crab theCrab;
     private Beach theBeach;
@@ -109,5 +114,22 @@ public class OhCoconutsGameManager {
 
     public boolean done() {
         return coconutsInFlight == 0 && gameTick >= MAX_TIME;
+    }
+
+    @Override
+    public void attach(HitObserver hitObserver) {
+        this.observers.add(hitObserver);
+    }
+
+    @Override
+    public void detach(HitObserver hitObserver) {
+        this.observers.remove(hitObserver);
+    }
+
+    @Override
+    public void notifyAll(HitEvent hitEvent) {
+        for (HitObserver observer : observers) {
+            observer.update(hitEvent);
+        }
     }
 }
