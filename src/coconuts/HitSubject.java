@@ -6,6 +6,6 @@ package coconuts;
  */
 public interface HitSubject {
     void attach(HitObserver hitObserver);
-    void detach(HitObserver hitObserver);
+    void detach(HitObserver hitObserver);   // not really used in this implementation! Nothing is detaching.
     void notifyAll(HitEvent hitEvent);
 }
