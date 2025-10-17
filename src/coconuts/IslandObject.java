@@ -1,3 +1,4 @@
+// Editor: JOSIAH MATHEWS
 package coconuts;
 
 import javafx.scene.image.Image;
@@ -36,7 +37,7 @@ public abstract class IslandObject {
             imageView.setLayoutY(y);
         }
     }
-
+/*
     public boolean isHittable() {
         return false;
     }
@@ -62,4 +63,42 @@ public abstract class IslandObject {
     }
 
     public abstract void step();
+*/
+
+    // Changing to Abstract is more common sense here
+    public abstract boolean isHittable();
+
+
+    public abstract boolean isGroundObject();
+
+    public abstract boolean isFalling();
+
+    public abstract boolean canHit(IslandObject other);
+
+    /**
+     * Defines the Y where this Object can be Hit.
+     * Changes per Hittable Object. Coconut Bottom vs Laser top.
+     * @return int of Hittable Y value.
+     */
+    protected abstract int hittable_height();
+
+    public boolean isTouching(IslandObject other) {
+        boolean yTouching = Math.abs(this.hittable_height() - other.hittable_height()) < 5;
+
+        if (yTouching) {
+            // Check X centers
+            int thisCenter = this.x + (this.width / 2);
+            int otherCenter = other.x + (other.width / 2);
+
+            int buffer = 10;
+            boolean thisInBetweenOther = (thisCenter >= other.x + buffer && thisCenter <= other.x + other.width + buffer);
+            boolean otherInBetweenThis = (otherCenter >= this.x + buffer && otherCenter <= this.x + this.width + buffer);
+
+            return thisInBetweenOther || otherInBetweenThis;
+        }
+        return false;
+    }
+
+    public abstract void step();
+
 }

@@ -14,6 +14,32 @@ public class Crab extends HittableIslandObject {
     }
 
     @Override
+    public boolean isGroundObject() {
+        return true;
+    }
+
+    @Override
+    public boolean isFalling() {
+        return false;
+    }
+
+    @Override
+    public boolean canHit(IslandObject other) {
+        return other.isHittable() && !other.isGroundObject();
+    }
+
+    /**
+     * Defines the Y where this Object can be Hit.
+     * Changes per Hittable Object. Coconut Bottom vs Laser top.
+     *
+     * @return int of Hittable Y value.
+     */
+    @Override
+    protected int hittable_height() {
+        return 0;
+    }
+
+    @Override
     public void step() {
         // do nothing
     }
