@@ -33,6 +33,16 @@ public class GameController {
 
         gamePane.setFocusTraversable(true);
 
+        // initialize Observer objects are passed in GameManager instances (just like Island Objects) to call back for changes
+        HitObserver scoreboard = new Scoreboard(destroyedCoconutsLabel, coconutsHitBeachLabel);
+        HitObserver gameStateManager = new GameStateManager(theGame);
+        HitObserver objectRemover = new ObjectRemover(theGame);
+
+        // Subject attaches Observers!
+        theGame.attach(scoreboard);
+        theGame.attach(gameStateManager);
+        theGame.attach(objectRemover);
+
         coconutTimeline = new Timeline(new KeyFrame(Duration.millis(MILLISECONDS_PER_STEP), (e) -> {
             theGame.tryDropCoconut();
             theGame.advanceOneTick();
@@ -56,6 +66,8 @@ public class GameController {
                 coconutTimeline.pause();
                 started = false;
             }
+        } else if (keyEvent.getCode() == KeyCode.UP) {  // Laser functionality
+            theGame.shootLaser();
         }
     }
 }
