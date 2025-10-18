@@ -13,7 +13,6 @@ public class OhCoconutsGameManager implements HitSubject {
     private final Collection<HittableIslandObject> hittableIslandSubjects = new LinkedList<>();
     private final Collection<IslandObject> scheduledForRemoval = new LinkedList<>();
     private final Collection<HitObserver> observers = new LinkedList<>();
-
     private final int height, width;
     private final int DROP_INTERVAL = 40;
     private final int MAX_TIME = 100;
@@ -77,7 +76,8 @@ public class OhCoconutsGameManager implements HitSubject {
     }
 
     public void shootLaser() {
-        LaserBeam laserBeam = new LaserBeam(this, height - 10, theCrab.x);
+        int crabCenterX = theCrab.x + (theCrab.width / 2);
+        LaserBeam laserBeam = new LaserBeam(this, height - 10, crabCenterX);
         registerObject(laserBeam);
         gamePane.getChildren().add(laserBeam.getImageView());
     }
@@ -86,53 +86,63 @@ public class OhCoconutsGameManager implements HitSubject {
         theCrab = null;
     } // called from GameStateManager?
 
+
+
     public void advanceOneTick() {
         for (IslandObject o : allObjects) {
             o.step();
             o.display();
         }
-        // see if objects hit; the hit itself is something you will add
-        // you can't change the lists while processing them, so collect
-        //   items to be removed in the first pass and remove them later
-        scheduledForRemoval.clear();
-        for (IslandObject thisObj : allObjects) {
-            for (HittableIslandObject hittableObject : hittableIslandSubjects) {
-                if (thisObj.canHit(hittableObject) && thisObj.isTouching(hittableObject)) {
-                    // process the HIT EVENT for notifyAll()
-                    notifyAll(new HitEvent(thisObj, hittableObject));
-                    /* I moved this for you Shritej: This responsibility is moved to ObjectRemover Observer for both Laser and Coconut to be wiped
-                    scheduledForRemoval.add(hittableObject);
-                    gamePane.getChildren().remove(hittableObject.getImageView());
 
-                    gamePane.getChildren().remove(hittableObject.getImageView());
-                    gamePane.getChildren().remove(thisObj.getImageView());
-                     */
+        java.util.Set<String> handledPairs = new java.util.HashSet<>();
+        scheduledForRemoval.clear();
+
+        for (IslandObject actor : allObjects) {
+            for (HittableIslandObject target : hittableIslandSubjects) {
+                if (actor == target) continue;
+
+                if (actor.canHit(target) && actor.isTouching(target)) {
+                    int ha = System.identityHashCode(actor);
+                    int hb = System.identityHashCode(target);
+                    String key = (ha < hb) ? (ha + ":" + hb) : (hb + ":" + ha);
+
+                    if (handledPairs.add(key)) {
+                        notifyAll(new HitEvent(actor, target));
+                    }
                 }
             }
         }
 
-        // actually remove the objects as needed
-        for (IslandObject thisObj : scheduledForRemoval) {
-            allObjects.remove(thisObj);
-            if (thisObj.isHittable()) {
-                hittableIslandSubjects.remove((HittableIslandObject) thisObj);
+        for (IslandObject obj : new java.util.ArrayList<>(scheduledForRemoval)) {
+            allObjects.remove(obj);
+            if (obj.isHittable()) {
+                hittableIslandSubjects.remove((HittableIslandObject) obj);
             }
         }
         scheduledForRemoval.clear();
     }
 
-    // Called from Object Remover Observer after notified of HitEvents!
-    public void scheduleForDeletion(IslandObject islandObject) {
-        gamePane.getChildren().remove(islandObject.getImageView()); // added here to "hide" each object
-        scheduledForRemoval.add(islandObject);
+    public void scheduleForDeletion(IslandObject obj) {
+        if (obj.isGroundObject() && !obj.isHittable()) {
+            return;
+        }
+
+        gamePane.getChildren().remove(obj.getImageView());
+
+        if (obj.isHittable() && obj.isFalling()) {
+            coconutsInFlight = Math.max(0, coconutsInFlight - 1);
+        }
+
+        scheduledForRemoval.add(obj);
     }
 
     public boolean done() {
-        return coconutsInFlight == 0 && gameTick >= MAX_TIME;
+        return (theCrab == null && coconutsInFlight == 0);
+
     }
 
 
-    // Subject classes below
+
     @Override
     public void attach(HitObserver hitObserver) {
         this.observers.add(hitObserver);
@@ -150,4 +160,5 @@ public class OhCoconutsGameManager implements HitSubject {
             observer.update(hitEvent);
         }
     }
+
 }

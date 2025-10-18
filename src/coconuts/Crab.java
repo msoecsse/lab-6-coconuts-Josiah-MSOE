@@ -36,7 +36,7 @@ public class Crab extends HittableIslandObject {
      */
     @Override
     protected int hittable_height() {
-        return 0;
+        return y;
     }
 
     @Override
@@ -44,9 +44,11 @@ public class Crab extends HittableIslandObject {
         // do nothing
     }
 
-    // Captures the crab crawling sideways
     public void crawl(int offset) {
         x += offset;
+        int maxX = containingGame.getWidth() - this.width;
+        if (x < 0) x = 0;
+        if (x > maxX) x = maxX;
         display();
     }
 }

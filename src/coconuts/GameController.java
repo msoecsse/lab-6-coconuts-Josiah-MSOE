@@ -1,6 +1,8 @@
 package coconuts;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -33,6 +35,10 @@ public class GameController {
 
         gamePane.setFocusTraversable(true);
 
+
+        destroyedCoconutsLabel.setText("0");
+        coconutsHitBeachLabel.setText("0");
+
         // initialize Observer objects are passed in GameManager instances (just like Island Objects) to call back for changes
         HitObserver scoreboard = new Scoreboard(destroyedCoconutsLabel, coconutsHitBeachLabel);
         HitObserver gameStateManager = new GameStateManager(theGame);
@@ -43,17 +49,30 @@ public class GameController {
         theGame.attach(gameStateManager);
         theGame.attach(objectRemover);
 
+
         coconutTimeline = new Timeline(new KeyFrame(Duration.millis(MILLISECONDS_PER_STEP), (e) -> {
             theGame.tryDropCoconut();
             theGame.advanceOneTick();
-            if (theGame.done())
-                coconutTimeline.pause();
+            if (theGame.done()) {
+                coconutTimeline.stop();
+                started = false;
+
+                javafx.application.Platform.runLater(() -> {
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Game Over");
+                    alert.setHeaderText(null);
+                    alert.setContentText("🏝️ Game Over!\nYour crab has been crushed.");
+                    alert.showAndWait();
+                });
+            }
         }));
         coconutTimeline.setCycleCount(Timeline.INDEFINITE);
+
     }
 
     @FXML
     public void onKeyPressed(KeyEvent keyEvent) {
+        if (theGame.done()) return;
         if (keyEvent.getCode() == KeyCode.RIGHT && !theGame.done()) {
             theGame.getCrab().crawl(10);
         } else if (keyEvent.getCode() == KeyCode.LEFT && !theGame.done()) {
@@ -68,6 +87,43 @@ public class GameController {
             }
         } else if (keyEvent.getCode() == KeyCode.UP) {  // Laser functionality
             theGame.shootLaser();
+        }
+    }
+
+
+    public void update(HitEvent e) {
+        IslandObject a = e.islandObject1;
+        IslandObject b = e.islandObject2;
+
+        // the coconut is the falling & hittable one
+        IslandObject coconut = (a.isHittable() && a.isFalling()) ? a
+                : (b.isHittable() && b.isFalling()) ? b : null;
+        if (coconut == null) return;
+
+        IslandObject other = (coconut == a) ? b : a;
+
+        // Laser vs Coconut -> "Destroyed"
+        boolean laserVsCoconut = !other.isHittable() && !other.isGroundObject();
+        if (laserVsCoconut) {
+            javafx.application.Platform.runLater(() -> {
+                int cur = Integer.parseInt(destroyedCoconutsLabel.getText());
+                destroyedCoconutsLabel.setText(String.valueOf(cur + 1));
+            });
+            // keep in-flight count correct
+            try { coconut.getClass(); /* nop */ } finally { /* safe call */ }
+            // call manager via label owner? teammate kept it simple:
+            // if you prefer, add a setter in scoreboard; for now let GameStateManager handle counts on crab hit.
+            return;
+        }
+
+        // Coconut vs Beach -> "Hit Beach"
+        boolean isBeach = other.isGroundObject() && other.getImageView() == null;
+        if (isBeach) {
+            javafx.application.Platform.runLater(() -> {
+                int cur = Integer.parseInt(coconutsHitBeachLabel.getText());
+                coconutsHitBeachLabel.setText(String.valueOf(cur + 1));
+            });
+
         }
     }
 }

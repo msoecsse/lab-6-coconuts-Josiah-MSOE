@@ -1,15 +1,35 @@
 package coconuts;
 
-// Tracks for if Game ends by a Coconut hit directly to the CRAB
 public class GameStateManager implements HitObserver {
-    private OhCoconutsGameManager gameManager;
+    private final OhCoconutsGameManager game;
 
     public GameStateManager(OhCoconutsGameManager theGame) {
-        this.gameManager = theGame;
+        this.game = theGame;
     }
 
     @Override
-    public void update(HitEvent hitEvent) {
+    public void update(HitEvent e) {
+        IslandObject a = e.islandObject1;
+        IslandObject b = e.islandObject2;
 
+        IslandObject coconut = (a.isHittable() && a.isFalling()) ? a
+                : (b.isHittable() && b.isFalling()) ? b : null;
+        if (coconut == null) return;
+
+        IslandObject other = (coconut == a) ? b : a;
+
+
+        boolean isCrab = other.isGroundObject() && other.getImageView() != null;
+        if (isCrab) {
+            game.killCrab();
+            game.scheduleForDeletion(other);
+        }
+    }
+
+    private boolean isCoconut(IslandObject o) {
+        return o.isHittable() && o.isFalling();
+    }
+    private boolean isCrab(IslandObject o) {
+        return o.isGroundObject() && o.isHittable();
     }
 }
