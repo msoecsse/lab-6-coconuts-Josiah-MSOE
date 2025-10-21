@@ -13,7 +13,7 @@ public class Beach extends HittableIslandObject {
 
     @Override
     public boolean isGroundObject() {
-        return true;    // The base of the ground
+        return true;
     }
 
     @Override
@@ -23,15 +23,9 @@ public class Beach extends HittableIslandObject {
 
     @Override
     public boolean canHit(IslandObject other) {
-        return false;   // shouldn't hit Beach
+        return false;
     }
 
-    /**
-     * Defines the Y where this Object can be Hit.
-     * Changes per Hittable Object. Coconut Bottom vs Laser top.
-     *
-     * @return int of Hittable Y value.
-     */
     @Override
     protected int hittable_height() {
         return super.y;
